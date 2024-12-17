@@ -1,0 +1,106 @@
+{
+    "ANG MO KIO": {
+        "lat": 1.3691,
+        "lng": 103.8454
+    },
+    "BEDOK": {
+        "lat": 1.3236,
+        "lng": 103.9305
+    },
+    "BISHAN": {
+        "lat": 1.3574,
+        "lng": 103.8485
+    },
+    "BUKIT BATOK": {
+        "lat": 1.3561,
+        "lng": 103.7518
+    },
+    "BUKIT MERAH": {
+        "lat": 1.277,
+        "lng": 103.8198
+    },
+    "BUKIT PANJANG": {
+        "lat": 1.3837,
+        "lng": 103.7618
+    },
+    "BUKIT TIMAH": {
+        "lat": 1.3294,
+        "lng": 103.8021
+    },
+    "CENTRAL AREA": {
+        "lat": 1.2903,
+        "lng": 103.8519
+    },
+    "CHOA CHU KANG": {
+        "lat": 1.385,
+        "lng": 103.7445
+    },
+    "CLEMENTI": {
+        "lat": 1.3151,
+        "lng": 103.7657
+    },
+    "GEYLANG": {
+        "lat": 1.3186,
+        "lng": 103.8915
+    },
+    "HOUGANG": {
+        "lat": 1.3616,
+        "lng": 103.8865
+    },
+    "JURONG EAST": {
+        "lat": 1.332,
+        "lng": 103.7434
+    },
+    "JURONG WEST": {
+        "lat": 1.3398,
+        "lng": 103.7074
+    },
+    "KALLANG/WHAMPOA": {
+        "lat": 1.3196,
+        "lng": 103.8584
+    },
+    "MARINE PARADE": {
+        "lat": 1.3023,
+        "lng": 103.9027
+    },
+    "PASIR RIS": {
+        "lat": 1.3731,
+        "lng": 103.9496
+    },
+    "PUNGGOL": {
+        "lat": 1.3984,
+        "lng": 103.9099
+    },
+    "QUEENSTOWN": {
+        "lat": 1.2949,
+        "lng": 103.8021
+    },
+    "SEMBAWANG": {
+        "lat": 1.4456,
+        "lng": 103.8185
+    },
+    "SENGKANG": {
+        "lat": 1.391,
+        "lng": 103.895
+    },
+    "SERANGOON": {
+        "lat": 1.353,
+        "lng": 103.8669
+    },
+    "TAMPINES": {
+        "lat": 1.3496,
+        "lng": 103.9568
+    },
+    "TOA PAYOH": {
+        "lat": 1.3343,
+        "lng": 103.8563
+    },
+    "WOODLANDS": {
+        "lat": 1.436,
+        "lng": 103.786
+    },
+    "YISHUN": {
+        "lat": 1.4292,
+        "lng": 103.835
+    }
+}

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resale Flat Data Visualization</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
+    <style>
+       /* 替换页面背景 */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-image: url('background.webp'); /* 替换背景图片 */
+    background-size: cover; /* 背景图片铺满页面 */
+    background-repeat: no-repeat;
+    background-position: center;
+    color: #fff; /* 保持文本颜色 */
+}
+
+/* 地图文本容器定位到地图的右下角 */
+#map-info {
+    position: absolute;
+    bottom: 400px; /* 调整距离底部的间距 */
+    right: 400px; /* 调整距离右侧的间距 */
+    background-color: rgba(28, 43, 68, 0.9); /* 半透明背景 */
+    padding: 10px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 12px;
+    text-align: left;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* 确保容器显示在地图上层 */
+}
+
+       
+        .title-bar {
+            text-align: center;
+            background-color: #104B87;
+            color: #fff;
+            padding: 15px 0;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-bottom: 2px solid #00D4FF;
+        }
+
+        .container {
+            display: grid;
+            grid-template-areas:
+                "top-left map top-right"
+                "middle-left map middle-right"
+                "bottom-left map bottom-right";
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .card {
+            background-color: rgba(28, 43, 68, 0.9); 
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 400px;
+        }
+        .custom-button {
+    padding: 10px 20px;            /* 控制按钮内边距，文字与按钮边框的距离 */
+    border: none;                  /* 移除边框 */
+    background-color: #cbdbed;     /* 按钮背景颜色 */
+    color: rgb(20, 3, 3);          /* 按钮文字颜色 */
+    border-radius: 5px;            /* 圆角边框 */
+    cursor: pointer;               /* 鼠标悬停时显示手型 */
+    font-size: 16px;               /* 文字大小 */
+    font-weight: bold;             /* 文字加粗 */
+    transition: background-color 0.3s; /* 添加背景色过渡效果 */
+    display: inline-block;         /* 确保按钮大小根据内容调整 */
+    white-space: nowrap;           /* 禁止文字换行 */
+}
+
+        h3 {
+            color: #00D4FF;
+        }
+        h2 {
+            color: #00D4FF;
+            font-size: 20px;
+        }
+#map {
+    grid-area: map;
+    width: 100%; /* 宽度占满父容器 */
+    max-width: 1200px; /* 最大宽度限制 */
+    height: 60vh; /* 高度为视口高度的60% */
+    margin: 0 auto; /* 居中显示 */
+}
+        .chart {
+            width: 100%;
+            height: 300px;
+            background-color: rgba(28, 43, 68, 0.9); 
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 页面标题栏 -->
+    <div class="title-bar">Singapore 2024 Resale Flat Data Visualization Dashboard
+        <h2>Huang Yanan & Zhu Ziye</h2>
+        <div class="nav-buttons" style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">
+            <button onclick="window.location.href='Untitled-1.html'" class="custom-button" >
+                Singapore 2024 Resale Flat Data Overview</button>
+            <button onclick="window.location.href='Untitled-2.html'" class="custom-button" >
+                Resale Price Analysis</button>
+
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 左上角：折线图 -->
+        <div class="card" style="grid-area: top-left;">
+            <h3>Resale Price Trend</h3>
+            <div id="lineChart" class="chart"></div>
+        </div>
+
+        <!-- 中间：地图 -->
+        <div id="map">
+            <h2 style="text-align: center;">Singapore Resale Prices Map</h2>
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+            
+           
+            
+        
+            <!-- 右下角的文本容器
+             <div id="map-info" >
+                <h3 style="margin: 0 0 5px; color: #00D4FF;">Key Indicators</h3>
+                <p>Average Price: <strong>$450,000</strong></p>
+                <p>Total Transactions: <strong>1200</strong></p>
+                <p>Highest Transaction: <strong>$1,200,000</strong></p>
+            </div> -->
+        
+        
+
+        <!-- 右上角：饼图 -->
+        <div class="card" style="grid-area: top-right;">
+            <h3>Flat Type Distribution</h3>
+            <div id="pieChart" class="chart"></div>
+        </div>
+
+        <!-- 左中：柱状图 -->
+        <div class="card" style="grid-area: middle-left;">
+            <h3>Monthly Transactions</h3>
+            <div id="barChart" class="chart"></div>
+        </div>
+
+        <!-- 右中：关键指标 -->
+        <div class="card" style="grid-area: middle-right;">
+            <h3>leased years scatter diagram</h3>
+            <div id="barChartLeasedYears" class="chart"></div>
+        </div>
+    </div>
+
+    <script>
+        Promise.all([
+            d3.csv("resale_2024.csv"),
+            d3.json("town_coordinates.json")
+        ]).then(([data, townData]) => {
+            // 数据预处理
+            data.forEach(d => {
+                d.resale_price = +d.resale_price;
+                d.month = new Date(d.month);
+            });
+
+            /* 折线图 */
+        const lineMargin = { top: 20, right: 20, bottom: 40, left: 50 };
+        const lineWidth = 350 - lineMargin.left - lineMargin.right;
+        const lineHeight = 300 - lineMargin.top - lineMargin.bottom;
+
+        const lineSvg = d3.select("#lineChart").append("svg")
+            .attr("width", 350)
+            .attr("height", 300);
+
+        const xScale = d3.scaleTime()
+            .domain(d3.extent(data, d => d.month))
+            .range([0, lineWidth]);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.resale_price)])
+            .range([lineHeight, 0]);
+
+        const gLine = lineSvg.append("g")
+            .attr("transform", `translate(${lineMargin.left},${lineMargin.top})`);
+
+        gLine.append("g")
+            .attr("transform", `translate(0,${lineHeight})`)
+            .call(d3.axisBottom(xScale));
+
+        gLine.append("g").call(d3.axisLeft(yScale));
+
+        gLine.append("path")
+            .datum(data)
+            .attr("fill", "none")
+            .attr("stroke", "#00D4FF")
+            .attr("stroke-width", 2)
+            .attr("d", d3.line().x(d => xScale(d.month)).y(d => yScale(d.resale_price)));
+
+            /* Treemap for Town Transaction Count */
+        // 使用 D3 绘制 Treemap
+const townDataCount = [
+    { town: "SENGKANG", count: 2019 },
+    { town: "WOODLANDS", count: 1944 },
+    { town: "PUNGGOL", count: 1942 },
+    { town: "JURONG WEST", count: 1856 },
+    { town: "TAMPINES", count: 1828 },
+    { town: "YISHUN", count: 1757 },
+    { town: "BUKIT BATOK", count: 1650 },
+    { town: "HOUGANG", count: 1413 },
+    { town: "BEDOK", count: 1256 },
+    { town: "CHOA CHU KANG", count: 1227 },
+    { town: "ANG MO KIO", count: 1014 },
+    { town: "BUKIT MERAH", count: 983 },
+    { town: "SEMBAWANG", count: 939 },
+    { town: "KALLANG/WHAMPOA", count: 882 },
+    { town: "BUKIT PANJANG", count: 816 },
+    { town: "TOA PAYOH", count: 769 },
+    { town: "QUEENSTOWN", count: 675 },
+    { town: "PASIR RIS", count: 654 },
+    { town: "GEYLANG", count: 635 },
+    { town: "JURONG EAST", count: 541 },
+    { town: "CLEMENTI", count: 524 },
+    { town: "SERANGOON", count: 420 },
+    { town: "BISHAN", count: 363 },
+    { town: "CENTRAL AREA", count: 167 },
+    { town: "MARINE PARADE", count: 132 },
+    { town: "BUKIT TIMAH", count: 60 }
+];
+
+// 定义颜色比例尺，从浅蓝到深蓝
+const colorScale = d3.scaleSequential()
+    .domain([0, d3.max(townDataCount, d => d.count)])
+    .interpolator(d3.interpolateBlues);
+
+// 创建 SVG 容器
+const chartDiv = document.getElementById("barChart"); // 获取外部容器
+const width = chartDiv.clientWidth;  // 动态设置宽度
+const height = chartDiv.clientHeight; // 动态设置高度
+
+const treemapSvg = d3.select("#barChart").append("svg")
+    .attr("width", width)  // 使用动态宽度
+    .attr("height", height); // 使用动态高度
+
+
+
+// 创建 Treemap 布局
+const root = d3.hierarchy({ children: townDataCount })
+    .sum(d => d.count);
+
+d3.treemap()
+    .size([width, height])
+    .padding(2)(root);
+
+// 绘制 Treemap 的矩形
+treemapSvg.selectAll("rect")
+    .data(root.leaves())
+    .enter().append("rect")
+    .attr("x", d => d.x0)
+    .attr("y", d => d.y0)
+    .attr("width", d => d.x1 - d.x0)
+    .attr("height", d => d.y1 - d.y0)
+    .attr("fill", d => colorScale(d.data.count));
+
+// 添加地区名称和数量文本，自动换行
+treemapSvg.selectAll("text")
+    .data(root.leaves())
+    .enter().append("text")
+    .attr("x", d => d.x0 + 5)
+    .attr("y", d => d.y0 + 15)
+    .attr("fill", "#fff")
+    .attr("font-size", "10px")
+    .attr("font-family", "Arial")
+    .attr("text-anchor", "start")
+    .attr("dominant-baseline", "hanging")
+    .each(function(d) {
+        const node = d3.select(this);
+        const words = `${d.data.town}\n${d.data.count}`.split("\n");
+        words.forEach((word, i) => {
+            node.append("tspan")
+                .attr("x", d.x0 + 5)
+                .attr("dy", i === 0 ? 0 : 12) // 第一个词与后续词的间距
+                .text(word);
+        });
+    });
+
+
+/* 饼图 with Legend */
+const pieSvg = d3.select("#pieChart").append("svg")
+    .attr("width", 400) // 容器宽度增加，以适配图例
+    .attr("height", 300);
+
+const pieGroup = pieSvg.append("g")
+    .attr("transform", "translate(150,150)");
+
+const radius = 150;
+
+// 数据处理：计算 flat type 的数量
+const flatTypeData = Array.from(d3.rollup(data, v => v.length, d => d.flat_type));
+
+// 饼图比例
+const pie = d3.pie().value(d => d[1]);
+
+// 饼图弧生成器
+const arc = d3.arc().innerRadius(0).outerRadius(radius);
+
+// 定义颜色比例尺
+const color = d3.scaleOrdinal()
+    .domain(flatTypeData.map(d => d[0]))
+    .range(d3.schemeCategory10);
+
+// 绘制饼图
+pieGroup.selectAll("path")
+    .data(pie(flatTypeData))
+    .enter().append("path")
+    .attr("d", arc)
+    .attr("fill", d => color(d.data[0]))
+    .attr("stroke", "#fff")
+    .style("stroke-width", "2px");
+
+// 添加图例
+const legendGroup = pieSvg.append("g")
+    .attr("transform", "translate(300, 50)"); // 图例位置
+
+legendGroup.selectAll("rect")
+    .data(flatTypeData)
+    .enter().append("rect")
+    .attr("x", 0)
+    .attr("y", (d, i) => i * 20)
+    .attr("width", 12)
+    .attr("height", 12)
+    .attr("fill", d => color(d[0]));
+
+legendGroup.selectAll("text")
+    .data(flatTypeData)
+    .enter().append("text")
+    .attr("x", 18)
+    .attr("y", (d, i) => i * 20 + 10)
+    .attr("font-size", "10px")
+    .attr("fill", "#fff")
+    .text(d => `${d[0]}: ${d[1]}`);
+
+            // 设置地图宽高
+            const mapwidth = 900, mapheight = 800;
+    
+            const svg = d3.select("#map")
+            .append("svg")
+            .attr("width", width * 1.5)  // 放大宽度，比如原来的1.5倍
+            .attr("height", height * 1.5) // 放大高度
+            .attr("style", "display: block; margin: auto;") // 水平居中
+            .append("g")
+            .attr("transform", "scale(1.5)"); // 整体放大1.5倍
+
+    
+                    
+
+            const tooltip = d3.select("#tooltip");
+
+            // 颜色比例尺
+            const colorScalemap = d3.scaleLinear()
+                .range(["#FFCCCC", "#800000"]);
+
+            // 地理投影和路径生成器
+            let projection = d3.geoMercator();
+            const path = d3.geoPath().projection(projection);
+
+            // 加载数据
+            Promise.all([
+                d3.json("sgmap_merged.json"), // 地图数据
+                d3.csv("resale_2024.csv")     // 平均转售价格数据
+            ]).then(([geoData, csvData]) => {
+                const resalePriceByTown = d3.rollup(
+                    csvData,
+                    v => d3.mean(v, d => +d.resale_price),
+                    d => d.town.trim().toUpperCase()
+                );
+
+                const validFeatures = geoData.features.filter(d => d.geometry && d.geometry.coordinates);
+
+                projection.fitSize([width, height], { type: "FeatureCollection", features: validFeatures });
+
+                const prices = Array.from(resalePriceByTown.values());
+                colorScale.domain([d3.min(prices), d3.max(prices)]);
+
+                svg.selectAll("path")
+                    .data(validFeatures)
+                    .enter().append("path")
+                    .attr("d", path)
+                    .attr("fill", d => {
+                        const townName = d.properties.Town.toUpperCase();
+                        const avgPrice = resalePriceByTown.get(townName) || 0;
+                        return avgPrice ? colorScale(avgPrice) : "#ccc";
+                    })
+                    .attr("stroke", "#fff")
+                    .on("mouseover", (event, d) => {
+                        const townName = d.properties.Town;
+                        const avgPrice = resalePriceByTown.get(townName.toUpperCase());
+                        const priceText = (typeof avgPrice === "number" && !isNaN(avgPrice))
+                            ? `$${avgPrice.toFixed(0)}`
+                            : "No Data";
+                        tooltip.style("display", "block")
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 10) + "px")
+                            .html(`<strong>${townName}</strong><br>Average Price: ${priceText}`);
+                    })
+                    .on("mouseout", () => tooltip.style("display", "none"));
+
+               
+                
+            });
+  /* 租约年限柱状图 */
+const barMargin = { top: 20, right: 20, bottom: 40, left: 50 };
+const barWidth = 400 - barMargin.left - barMargin.right;
+const barHeight = 300 - barMargin.top - barMargin.bottom;
+
+// 计算租约年限分组
+const currentYear = 2024;
+const leaseRanges = [
+    { range: "> 40 years", min: 41, max: Infinity },
+    { range: "40-30 years", min: 31, max: 40 },
+    { range: "30-20 years", min: 21, max: 30 },
+    { range: "20-10 years", min: 11, max: 20 },
+    { range: "< 10 years", min: 0, max: 10 }
+];
+
+// 统计分组数量
+const leaseData = [];
+leaseRanges.forEach(category => {
+    const count = data.filter(d => {
+        const leaseYears = currentYear - +d.lease_commence_date; // 计算租约年限
+        return leaseYears >= category.min && leaseYears <= category.max;
+    }).length;
+    leaseData.push({ range: category.range, count });
+});
+
+// 创建 SVG 容器
+const barSvg = d3.select("#barChartLeasedYears").append("svg")
+    .attr("width", barWidth + barMargin.left + barMargin.right)
+    .attr("height", barHeight + barMargin.top + barMargin.bottom)
+    .append("g")
+    .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+
+// X轴：租约区间
+const xBar = d3.scaleBand()
+    .domain(leaseData.map(d => d.range))
+    .range([0, barWidth])
+    .padding(0.3);
+
+// Y轴：房屋数量
+const yBar = d3.scaleLinear()
+    .domain([0, d3.max(leaseData, d => d.count)])
+    .nice()
+    .range([barHeight, 0]);
+
+// 绘制柱子
+barSvg.selectAll("rect")
+    .data(leaseData)
+    .enter().append("rect")
+    .attr("x", d => xBar(d.range))
+    .attr("y", d => yBar(d.count))
+    .attr("width", xBar.bandwidth())
+    .attr("height", d => barHeight - yBar(d.count))
+    .attr("fill", "#00D4FF")
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 1);
+
+// 添加X轴
+barSvg.append("g")
+    .attr("transform", `translate(0,${barHeight})`)
+    .call(d3.axisBottom(xBar))
+    .selectAll("text")
+    .style("fill", "#fff");
+
+// 添加Y轴
+barSvg.append("g")
+    .call(d3.axisLeft(yBar).ticks(5))
+    .selectAll("text")
+    .style("fill", "#fff");
+
+// 添加X轴标签
+barSvg.append("text")
+    .attr("x", barWidth / 2)
+    .attr("y", barHeight + 35)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#fff")
+    .text("Lease Years Group");
+
+// 添加Y轴标签
+barSvg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -barHeight / 2)
+    .attr("y", -35)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#fff")
+    .text("Number of Resale Flats");
+
+// 添加数据标签
+barSvg.selectAll("text.bar-label")
+    .data(leaseData)
+    .enter().append("text")
+    .attr("class", "bar-label")
+    .attr("x", d => xBar(d.range) + xBar.bandwidth() / 2)
+    .attr("y", d => yBar(d.count) - 5)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#fff")
+    .attr("font-size", "10px")
+    .text(d => d.count);
+
+
+        });
+        
+    </script>
+</body>
+</html>
