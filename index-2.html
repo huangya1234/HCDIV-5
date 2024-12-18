@@ -433,7 +433,7 @@ const legend = svg.append("g")
 floorAreaRanges.forEach((range, i) => {
     // 添加图例的方块
     legend.append("rect")
-        .attr("x", i * 100) // 每个图例横向间隔
+        .attr("x", i * 120) // 每个图例横向间隔
         .attr("y", 0) // 放置在顶部
         .attr("width", 15)
         .attr("height", 15)
@@ -441,7 +441,7 @@ floorAreaRanges.forEach((range, i) => {
 
     // 添加图例文本
     legend.append("text")
-        .attr("x", i * 100 + 20) // 文本位置稍靠右
+        .attr("x", i * 120 + 20) // 文本位置稍靠右
         .attr("y", 12) // 垂直居中对齐
         .attr("fill", "#fff")
         .style("font-size", "12px")
