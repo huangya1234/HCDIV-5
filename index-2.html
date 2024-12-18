@@ -328,10 +328,10 @@ histSvg.append("text")
            
                  /** Module 3: Flat Models vs Avg Resale Price with Floor Area Ranges **/
                     const floorAreaRanges = [
-                    { label: "<90", filter: d => d.floor_area_sqm < 90 },
-                    { label: "90-120", filter: d => d.floor_area_sqm >= 90 && d.floor_area_sqm < 120 },
-                    { label: "120-150", filter: d => d.floor_area_sqm >= 120 && d.floor_area_sqm < 150 },
-                    { label: "150+", filter: d => d.floor_area_sqm >= 150 }
+                    { label: "flat area <90", filter: d => d.floor_area_sqm < 90 },
+                    { label: "flat area 90-120", filter: d => d.floor_area_sqm >= 90 && d.floor_area_sqm < 120 },
+                    { label: "flat area 120-150", filter: d => d.floor_area_sqm >= 120 && d.floor_area_sqm < 150 },
+                    { label: "flat area 150+", filter: d => d.floor_area_sqm >= 150 }
                 ];
 
                 const selectedModels = ["Model A", "Improved", "New Generation", "Premium Apartment"];
