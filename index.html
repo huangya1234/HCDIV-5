@@ -169,7 +169,6 @@ body {
                 d.month = new Date(d.month);
             });
 
-            /* 折线图 */
     
             
     // Create a table to display summary statistics
@@ -249,6 +248,8 @@ const colorScale = d3.scaleSequential()
     .domain([0, d3.max(townDataCount, d => d.count)])
     .interpolator(d3.interpolateBlues);
 
+   
+
 // 创建 SVG 容器
 const chartDiv = document.getElementById("barChart"); // 获取外部容器
 const width = chartDiv.clientWidth;  // 动态设置宽度
@@ -261,14 +262,28 @@ const treemapSvg = d3.select("#barChart").append("svg")
 
 
 // 创建 Treemap 布局
+const treemapTooltip = d3.select("body").append("div")
+    .attr("class", "tree-tooltip")
+    .style("position", "absolute")
+    .style("text-align", "center")
+    .style("width", "120px")
+    .style("height", "auto")
+    .style("padding", "8px")
+    .style("background", "rgba(0,0,0,0.7)")
+    .style("color", "white")
+    .style("border-radius", "4px")
+    .style("pointer-events", "none")
+    .style("opacity", 0);
+
+
+
 const root = d3.hierarchy({ children: townDataCount })
     .sum(d => d.count);
 
 d3.treemap()
-    .size([width, height])
+    .size([400, 300])
     .padding(2)(root);
 
-// 绘制 Treemap 的矩形
 treemapSvg.selectAll("rect")
     .data(root.leaves())
     .enter().append("rect")
@@ -276,7 +291,21 @@ treemapSvg.selectAll("rect")
     .attr("y", d => d.y0)
     .attr("width", d => d.x1 - d.x0)
     .attr("height", d => d.y1 - d.y0)
-    .attr("fill", d => colorScale(d.data.count));
+    .attr("fill", d => colorScale(d.data.count))
+    .on("mouseover", function (event, d) {
+        treemapTooltip.transition().duration(200).style("opacity", 0.9);
+        treemapTooltip.html(`${d.data.town}: ${d.data.count} transactions`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mousemove", function (event) {
+        treemapTooltip.style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", function () {
+        treemapTooltip.transition().duration(500).style("opacity", 0);
+    });
+
 
 // 添加地区名称和数量文本，自动换行
 treemapSvg.selectAll("text")
@@ -301,7 +330,8 @@ treemapSvg.selectAll("text")
     });
 
 
-/* 饼图 with Legend */
+
+/* 饼图 with Tooltip */
 const pieSvg = d3.select("#pieChart").append("svg")
     .attr("width", 400) // 容器宽度增加，以适配图例
     .attr("height", 300);
@@ -325,6 +355,20 @@ const color = d3.scaleOrdinal()
     .domain(flatTypeData.map(d => d[0]))
     .range(d3.schemeCategory10);
 
+// 创建 Tooltip，并确保类名唯一化避免冲突
+const pieTooltip = d3.select("body").append("div")
+    .attr("class", "pie-tooltip")
+    .style("position", "absolute")
+    .style("text-align", "center")
+    .style("width", "120px")
+    .style("height", "auto")
+    .style("padding", "8px")
+    .style("background", "rgba(0,0,0,0.7)")
+    .style("color", "white")
+    .style("border-radius", "4px")
+    .style("pointer-events", "none")
+    .style("opacity", 0);
+
 // 绘制饼图
 pieGroup.selectAll("path")
     .data(pie(flatTypeData))
@@ -332,7 +376,20 @@ pieGroup.selectAll("path")
     .attr("d", arc)
     .attr("fill", d => color(d.data[0]))
     .attr("stroke", "#fff")
-    .style("stroke-width", "2px");
+    .style("stroke-width", "2px")
+    .on("mouseover", function (event, d) {
+        pieTooltip.transition().duration(200).style("opacity", 0.9);
+        pieTooltip.html(`${d.data[0]}: ${d.data[1]} flats`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mousemove", function (event) {
+        pieTooltip.style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", function () {
+        pieTooltip.transition().duration(500).style("opacity", 0);
+    });
 
 // 添加图例
 const legendGroup = pieSvg.append("g")
@@ -355,6 +412,7 @@ legendGroup.selectAll("text")
     .attr("font-size", "10px")
     .attr("fill", "#fff")
     .text(d => `${d[0]}: ${d[1]}`);
+
 
             // 设置地图宽高
             const mapwidth = 900, mapheight = 800;
